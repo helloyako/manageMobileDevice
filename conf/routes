@@ -1,0 +1,40 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Default path will just redirect to the device list
+GET     /                           controllers.Application.inde
+
+# Computers list (look at the default values for pagination parameters)
+GET     /devices                  controllers.Application.list(p:Int ?= 0, s:Int ?= -1, f ?= "")
+
+# Add device
+GET     /devices/newDevice              controllers.Application.createDevice
+POST    /devices/newDevice              controllers.Application.createDeviceSave
+
+# Add User
+GET     /devices/newUser              controllers.Application.createUser
+POST    /devices/newUser              controllers.Application.createUserSave
+
+# Edit existing device
+GET     /devices/:id              controllers.Application.edit(id:Long)
+POST    /devices/:id              controllers.Application.update(id:Long)
+
+# Rent device
+GET     /rentdevice/:id              controllers.Application.rentDevice(id:Long,name:String, page: Int, orderBy: Int, filter: String)
+GET     /returndevice/:id              controllers.Application.returnDevice(id:Long,name:String, page: Int, orderBy: Int, filter: String)
+
+# Delete a device
+POST    /devices/:id/delete       controllers.Application.delete(id:Long)
+
+# Authentication
+POST    /authenticate                    controllers.Authentication.authenticate(page: Int, orderBy: Int, filter: String)
+GET     /logout                   controllers.Authentication.logout
+
+#change user password
+GET     /user/:id              controllers.Application.changePassword(id:String)
+POST    /user/:id              controllers.Application.passwordUpdate(id:String)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+

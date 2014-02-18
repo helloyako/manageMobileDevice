@@ -1,0 +1,38 @@
+@(id: Long, deviceForm: Form[Device], teams : Seq[(String, String)], loginForm: Form[(String,String)])(implicit session: play.api.mvc.Session)
+
+@import helper._
+
+@implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapInput.f) }
+
+@main(session,loginForm) {
+    
+    <h1>Edit device</h1>
+    
+    @form(routes.Application.update(id)) {
+        
+        <fieldset>
+        
+            @inputText(deviceForm("name"), '_label -> "Device name")
+            @inputText(deviceForm("version"), '_label -> "OS Version")
+            
+            @select(
+                deviceForm("teamId"), 
+                teams, 
+                '_label -> "Team", '_default -> "-- Choose a team --",
+                '_showConstraints -> false
+            )
+        
+        </fieldset>
+        
+        <div class="actions">
+            <input type="submit" value="Save this device" class="btn primary"> or 
+            <a href="@routes.Application.list()" class="btn">Cancel</a> 
+        </div>
+        
+    }
+    
+    @form(routes.Application.delete(id), 'class -> "topRight") {
+        <input type="submit" value="Delete this device" class="btn danger">
+    }
+    
+}

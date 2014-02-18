@@ -1,0 +1,43 @@
+@(session: Session, loginForm:Form[(String,String)], page:Int = 0, currentOrderBy: Int = -1, currentFilter: String = "")(content: Html) 
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Manage Mobile Devices</title>
+        <link rel="shortcut icon" href="http://sstatic.naver.net/search/mobile/favicon_111011.ico">
+        <link rel="stylesheet" type="text/css" media="screen" href="@routes.Assets.at("stylesheets/bootstrap.min.css")">
+        <link rel="stylesheet" type="text/css" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+        <script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
+    </head>
+    <body>
+        
+        <header class="topbar">
+            <h1 class="fill">
+                <a href="@routes.Application.inde()"> 
+                    Mobile test device list
+                </a>
+                @if(session.get("id").isDefined){
+			            	<form action="@routes.Authentication.logout()" class="navbar-form pull-right">
+			            	@session.get("name") <a href='@routes.Application.changePassword(session.get("id").get)'><span>(@session.get("id"))</a></span>
+							    <button class="btn" type="submit">Sign out</button>
+							</form>
+            	} else{
+            		@helper.form(routes.Authentication.authenticate(page, currentOrderBy, currentFilter), 'class ->"navbar-form pull-right"){
+		                <input class="span2" type="text" name="id" placeholder="ID">
+	            
+	    	            <input class="span2" type="password" name="password" id="password" placeholder="Password">
+	            
+	        	        <button class="btn" type="submit">Sign in</button>
+	        	        
+	                }
+            	}
+            </h1> 
+        </header>
+        
+        <section id="main">
+            @content
+        </section>
+        
+    </body>
+</html>

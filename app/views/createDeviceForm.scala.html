@@ -1,0 +1,34 @@
+@(deviceForm: Form[Device], teams: Seq[(String, String)], loginForm: Form[(String,String)])(implicit session: play.api.mvc.Session)
+
+@import helper._
+@import helper.twitterBootstrap._
+
+@main(session,loginForm) {
+    
+    <h1>Add a device</h1>
+    
+    @helper.form(routes.Application.createDeviceSave()) {
+        
+        <fieldset>
+        
+            @inputText(deviceForm("name"), '_label -> "Device name")
+            @inputText(deviceForm("version"), '_label -> "OS Version")
+
+            @select(
+                deviceForm("teamId"), 
+                teams, 
+                '_label -> "Team", '_default -> "-- Choose a team --",
+                '_showConstraints -> false
+            )
+            
+
+        </fieldset>
+        
+        <div class="actions">
+            <input type="submit" value="Create this device" class="btn primary"> or 
+            <a href="@routes.Application.list()" class="btn">Cancel</a> 
+        </div>
+        
+    }
+    
+}

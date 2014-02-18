@@ -1,0 +1,154 @@
+@(currentPage: Page[(Device, Option[Team], Option[User])], currentOrderBy: Int, currentFilter: String, loginForm: Form[(String,String)])(implicit flash: play.api.mvc.Flash, session: play.api.mvc.Session) 
+
+@****************************************
+* Helper generating navigation links    *
+****************************************@
+@link(newPage: Int, newOrderBy: Option[Int] = None) = @{
+    routes.Application.list(newPage, newOrderBy.map { orderBy =>
+        if(orderBy == scala.math.abs(currentOrderBy)) -currentOrderBy else orderBy
+    }.getOrElse(currentOrderBy), currentFilter)
+    
+}
+
+@**********************************
+* Helper generating table headers *
+***********************************@
+@header(orderBy: Int, title: String) = {
+    <th class="col@orderBy header@if(scala.math.abs(currentOrderBy) == orderBy) @{if(currentOrderBy < 0) " headerSortDown" else " headerSortUp"}">
+        <a href="@link(0, Some(orderBy))">@title</a>
+    </th>
+}
+
+@isAdmin = @{
+	if(session.get("permission").isDefined){
+		if(models.User.isAdmin(session.get("permission").get)){
+			true
+		} else{
+			false
+		}
+	} else{
+		false
+	}
+}
+
+@isManager = @{
+	if(session.get("permission").isDefined){
+		if(models.User.isManager(session.get("permission").get)){
+			true
+		} else{
+			false
+		}
+	} else{
+		false
+	}
+}
+
+@main(session,loginForm, currentPage.page, currentOrderBy, currentFilter) {
+	
+    
+    <h1>@Messages("devices.list.title", currentPage.total)</h1>
+ 
+    @flash.get("success").map { message =>
+        <div class="alert-message warning">
+            <strong>Done!</strong> @message
+        </div>
+    }
+    
+    @loginForm.globalError.map { error =>
+		<div class="alert-message error">
+        	<strong>Oops!</strong> @error.message
+     	</div>
+   	}
+
+    <div id="actions">
+        
+        @helper.form(action=routes.Application.list()) {
+            <input type="search" id="searchbox" name="f" value="@currentFilter" placeholder="Filter by device name...">
+            <input type="submit" id="searchsubmit" value="Filter by name" class="btn primary">
+        }
+        
+        @if(isAdmin || isManager){<div id="add"><a class="btn success" href="@routes.Application.createDevice()">Add a new device</a> <a class="btn success" href="@routes.Application.createUser()">Add a new user</a></div>}    
+    
+    @Option(currentPage.items).filterNot(_.isEmpty).map { devices =>
+        
+        <table class="devices zebra-striped">
+            <thead>
+                <tr>
+                    @header(2, "Device Name")
+                    @header(3, "OS Version")
+                    @header(5, "Borrowed Date")
+                    @header(6, "Borrowed User")
+                    @header(12, "Management Team")
+                    @header(11, "Manager")
+                    @header(7, "Status")
+                </tr>
+            </thead>
+            <tbody>
+
+                @devices.map { 
+                    case (device, team, user) => {
+                        <tr>
+                            <td>@if(isAdmin){<a href="@routes.Application.edit(device.id.get)">}@device.name@if(isAdmin){</a>}</td>
+                            <td>@device.version.getOrElse{ <em>-</em> }</td>                            
+                            <td>
+                                @device.borrowed_date.map(_.format("yyyy-MM-dd")).getOrElse { <em>-</em> }
+                            </td>
+                            <td>@device.borrowed_user_id.getOrElse{ <em>-</em> }</td>
+                            <td>
+                                @team.map(_.name).getOrElse { <em>-</em> }
+                            </td>
+                            <td>
+                                @user.map(_.name).getOrElse { <em>-</em> }
+                            </td>
+                            <td>
+					        	@if(device.status){
+									<a href="@routes.Application.rentDevice(device.id.get, device.name, currentPage.page, currentOrderBy, currentFilter)"><button type="button" class="btn">Available</button></a>
+	                           	} else{
+	                           		@if(isAdmin || (isManager && session.get("id").isDefined && session.get("id") == team.map(_.manager_id))){<a href="@routes.Application.returnDevice(device.id.get, device.name, currentPage.page, currentOrderBy, currentFilter)">}<button type="button" class="btn info@if(!isAdmin && !(isManager && session.get("id").isDefined && session.get("id") == team.map(_.manager_id))){ disabled}">Return</button>@if(isAdmin || (isManager && session.get("id").isDefined && session.get("id") == team.map(_.manager_id))){</a>}
+	                           	}
+                            </td>
+                        </tr>
+                    }
+                }
+
+            </tbody>
+        </table>
+
+        <div id="pagination" class="pagination">
+            <ul>
+                @currentPage.prev.map { page =>
+                    <li class="prev">
+                        <a href="@link(page)">&larr; Previous</a>
+                    </li> 
+                }.getOrElse {
+                    <li class="prev disabled">
+                        <a>&larr; Previous</a>
+                    </li>
+                }
+                <li class="current">
+                    <a>Displaying @(currentPage.offset + 1) to @(currentPage.offset + devices.size) of @currentPage.total</a>
+                </li>
+                @currentPage.next.map { page =>
+                    <li class="next">
+                        <a href="@link(page)">Next &rarr;</a>
+                    </li> 
+                }.getOrElse {
+                    <li class="next disabled">
+                        <a>Next &rarr;</a>
+                    </li>
+                }
+            </ul>
+        </div>
+        
+    }.getOrElse {
+        
+        <div class="well">
+            <em>Nothing to display</em>
+        </div>
+        
+    }
+
+        
+}
+
+            
